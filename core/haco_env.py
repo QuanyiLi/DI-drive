@@ -1,9 +1,9 @@
-import evdev
+# import evdev
 import gym
-import numpy as  np
+import numpy as np
 import pygame
 from easydict import EasyDict
-from evdev import ecodes, InputDevice
+# from evdev import ecodes, InputDevice
 
 from core.envs.simple_carla_env import SimpleCarlaEnv
 from demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
@@ -39,7 +39,7 @@ train_config = dict(
                 dict(
                     name='birdview',
                     type='bev',
-                    size=[84, 84],
+                    size=[42, 42],
                     pixels_per_meter=2,
                     pixels_ahead_vehicle=16,
                 ),
@@ -48,6 +48,7 @@ train_config = dict(
         col_is_failure=True,
         stuck_is_failure=False,
         wrong_direction_is_failure=False,
+        off_route_is_failure=True,
         off_road_is_failure=True,
         ignore_light=True,
         visualize=dict(
@@ -83,8 +84,8 @@ class SteeringWheelController:
         assert pygame.joystick.get_count() > 0, "Please connect joystick or use keyboard input"
         print("Successfully Connect your Joystick!")
 
-        ffb_device = evdev.list_devices()[0]
-        self.ffb_dev = InputDevice(ffb_device)
+        # ffb_device = evdev.list_devices()[0]
+        # self.ffb_dev = InputDevice(ffb_device)
 
         self.joystick = pygame.joystick.Joystick(0)
         self.joystick.init()
@@ -105,11 +106,11 @@ class SteeringWheelController:
     def process_input(self, speed):
         pygame.event.pump()
         steering = -self.joystick.get_axis(0)
-        throttle = (1 - self.joystick.get_axis(2)) / 2
+        throttle = (1 - self.joystick.get_axis(1)) / 2
         brake = (1 - self.joystick.get_axis(3)) / 2
         offset = 30
-        val = int(65535 * (speed + offset) / (120 + offset))
-        self.ffb_dev.write(ecodes.EV_FF, ecodes.FF_AUTOCENTER, val)
+        # val = int(65535 * (speed + offset) / (120 + offset))
+        # self.ffb_dev.write(ecodes.EV_FF, ecodes.FF_AUTOCENTER, val)
         self.right_shift_paddle = True if self.joystick.get_button(self.RIGHT_SHIFT_PADDLE) else False
         self.left_shift_paddle = True if self.joystick.get_button(self.LEFT_SHIFT_PADDLE) else False
 
@@ -127,7 +128,7 @@ class SteeringWheelController:
         self.button_left = True if hat[0] == -1 else False
         self.button_right = True if hat[0] == 1 else False
 
-        return [-steering * self.STEERING_MAKEUP, (throttle - brake) / 2]
+        return [-steering * self.STEERING_MAKEUP, (throttle - brake)]
 
 
 class HACOEnv(ContinuousBenchmarkEnvWrapper):
@@ -155,9 +156,22 @@ class HACOEnv(ContinuousBenchmarkEnvWrapper):
         info["total_takeover_cost"] = self.total_takeover_cost
         info["raw_action"] = action if not takeover else human_action
         self.last_takeover = takeover
+
+        info["velocity"] = self.env._simulator_databuffer['state']['speed']
+        info["steering"] = info["raw_action"][0]
+        info["acceleration"] = info["raw_action"][1]
+        info["step_reward"] = r
+        info["cost"] = self.cost(info)
+        info["native_cost"] = info["cost"]
+        info["out_of_road"] = info["off_road"]
+        info["crash"] = info["collided"]
+        info["arrive_dest"] = info["success"]
         if not d:
             self.render()
         return o, r[0], d, info
+
+    def native_cost(self, info):
+        return 1 if info["off_route"] or info["off_road"] or info["collided"] else 0
 
     def get_takeover_cost(self, human_action, agent_action):
         takeover_action = safe_clip(np.array(human_action), -1, 1)
@@ -184,13 +198,13 @@ class HACOEnv(ContinuousBenchmarkEnvWrapper):
 
     @property
     def observation_space(self):
-        return gym.spaces.Dict({"birdview": gym.spaces.Box(low=0, high=1, shape=(84, 84, 5), dtype=np.uint8),
+        return gym.spaces.Dict({"birdview": gym.spaces.Box(low=0, high=1, shape=(42, 42, 5), dtype=np.uint8),
                                 "speed": gym.spaces.Box(-10., 10.0, shape=(1,))})
 
 
 if __name__ == "__main__":
     env = HACOEnv()
-    o=env.reset()
+    o = env.reset()
 
     while True:
         if not env.observation_space.contains(o):

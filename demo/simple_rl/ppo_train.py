@@ -44,7 +44,10 @@ train_config = dict(
             ),
         ),
         col_is_failure=True,
-        stuck_is_failure=True,
+        stuck_is_failure=False,
+        wrong_direction_is_failure=False,
+        off_route_is_failure=True,
+        off_road_is_failure=True,
         ignore_light=True,
         replay_path='./ppo_video',
         visualize=dict(
@@ -61,7 +64,7 @@ train_config = dict(
         ),
         wrapper=dict(
             # Collect and eval suites for training
-            collect=dict(suite='train_ft', ),
+            collect=dict(suite='FullTown02-v1'),
             eval=dict(suite='FullTown02-v1', ),
         ),
     ),
@@ -103,8 +106,8 @@ train_config = dict(
         eval=dict(
             evaluator=dict(
                 eval_freq=5000,
-                n_episode=3,
-                stop_rate=0.7,
+                n_episode=20,
+                stop_rate=1.0,
                 transform_obs=True,
             ),
         ),
