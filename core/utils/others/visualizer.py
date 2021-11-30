@@ -54,7 +54,7 @@ class Visualizer(object):
         :Arguments:
             - name (str): Name for window or file.
         """
-        self._name = name
+        self._name = "fix window"
         if 'gif' in self._outputs:
             self._gif_maker = GifMaker()
         if 'video' in self._outputs:
@@ -187,8 +187,8 @@ class Visualizer(object):
             self._gif_maker.clear(self._name)
         if self._video_maker is not None:
             self._video_maker.clear()
-        if 'show' in self._outputs:
-            cv2.destroyAllWindows()
+        # if 'show' in self._outputs:
+        #     cv2.destroyAllWindows()
 
     @property
     def canvas(self):

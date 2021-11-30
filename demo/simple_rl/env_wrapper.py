@@ -119,7 +119,7 @@ class ContinuousBenchmarkEnvWrapper(BenchmarkEnvWrapper):
         obs = super().reset(*args, **kwargs)
         obs_out = {
             'birdview': obs['birdview'][..., [0, 1, 5, 6, 8]],
-            'speed': (obs['speed'] / 25).astype(np.float32),
+            'speed': np.array([(obs['speed'] / 25).astype(np.float32)]),
         }
         return obs_out
 
@@ -143,7 +143,7 @@ class ContinuousBenchmarkEnvWrapper(BenchmarkEnvWrapper):
         obs = timestep.obs
         obs_out = {
             'birdview': obs['birdview'][..., [0, 1, 5, 6, 8]],
-            'speed': (obs['speed'] / 25).astype(np.float32),
+            'speed': np.array([(obs['speed'] / 25).astype(np.float32)]),
         }
         timestep = timestep._replace(obs=obs_out)
         return timestep

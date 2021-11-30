@@ -22,8 +22,8 @@ from demo.simple_rl.model import SACRLModel
 train_config = dict(
     exp_name='sac2_bev32_buf2e5_lr1e4_bs128_ns3000_update4_train_ft',
     env=dict(
-        collector_env_num=7,
-        evaluator_env_num=1,
+        collector_env_num=1,
+        evaluator_env_num=0,
         simulator=dict(
             town='Town01',
             disable_two_wheels=True,
@@ -66,7 +66,7 @@ train_config = dict(
         ),
     ),
     server=[
-        dict(carla_host='localhost', carla_ports=[9000, 9016, 2]),
+        dict(carla_host='localhost', carla_ports=[9000, 9004, 2]),
     ],
     policy=dict(
         cuda=True,

@@ -147,7 +147,7 @@ class BenchmarkEnvWrapper(CarlaEnvWrapper):
             assert len(args) == 0
             reset_params = kwargs.copy()
             poses_txt = reset_params.pop('poses_txt')
-            weathers = reset_params.pop('weathers')
+            weathers = [8]
             pose_pairs = read_pose_txt(benchmark_dir, poses_txt)
             for (start, end), weather in product(pose_pairs, weathers):
                 param = reset_params.copy()
