@@ -66,7 +66,7 @@ train_config = dict(
         ),
         wrapper=dict(
             # Collect and eval suites for training
-            collect=dict(suite='FullTown02-v1'),
+            collect=dict(suite='train_ft', ),
 
         ),
     ),
