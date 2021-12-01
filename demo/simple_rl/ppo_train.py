@@ -69,7 +69,7 @@ train_config = dict(
         ),
     ),
     server=[
-        dict(carla_host='localhost', carla_ports=[9000, 9010, 2]),
+        dict(carla_host='localhost', carla_ports=[9000, 9012, 2]),
     ],
     policy=dict(
         cuda=True,
