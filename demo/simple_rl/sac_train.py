@@ -44,7 +44,7 @@ train_config = dict(
             )
         ),
         col_is_failure=True,
-        stuck_is_failure=False,
+        stuck_is_failure=True,
         wrong_direction_is_failure=False,
         off_route_is_failure=True,
         off_road_is_failure=True,
