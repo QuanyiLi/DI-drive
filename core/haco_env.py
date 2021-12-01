@@ -48,7 +48,7 @@ train_config = dict(
         col_is_failure=True,
         stuck_is_failure=False,
         wrong_direction_is_failure=False,
-        off_route_is_failure=True,
+        off_route_is_failure=False,
         off_road_is_failure=True,
         ignore_light=True,
         visualize=dict(
@@ -161,7 +161,7 @@ class HACOEnv(ContinuousBenchmarkEnvWrapper):
         info["steering"] = info["raw_action"][0]
         info["acceleration"] = info["raw_action"][1]
         info["step_reward"] = r
-        info["cost"] = self.cost(info)
+        info["cost"] = self.native_cost(info)
         info["native_cost"] = info["cost"]
         info["out_of_road"] = info["off_road"]
         info["crash"] = info["collided"]
@@ -209,7 +209,7 @@ if __name__ == "__main__":
     while True:
         if not env.observation_space.contains(o):
             print(o)
-        o, r, d, i = env.step([0., -0.2])
+        o, r, d, i = env.step([0., -0.0])
 
         if d:
             env.reset()
