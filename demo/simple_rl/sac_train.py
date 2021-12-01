@@ -101,7 +101,7 @@ train_config = dict(
         ),
         eval=dict(
             evaluator=dict(
-                eval_freq=5000,
+                eval_freq=3000,
                 n_episode=3,
                 stop_rate=0.7,
                 transform_obs=True,
