@@ -32,7 +32,7 @@ train_config = dict(
                 dict(
                     name='rgb',
                     type='rgb',
-                    size=[1200, 800],
+                    size=[2400, 1600],
                     position=[-5.5, 0, 2.8],
                     rotation=[-15, 0, 0],
                 ),
@@ -66,7 +66,7 @@ train_config = dict(
         ),
         wrapper=dict(
             # Collect and eval suites for training
-            collect=dict(suite='train_ft', ),
+            collect=dict(suite='train_ft'),
 
         ),
     ),
@@ -132,19 +132,23 @@ class SteeringWheelController:
 
 
 class HACOEnv(ContinuousBenchmarkEnvWrapper):
-    def __init__(self, config=None):
+    def __init__(self, config=None, eval=False, port=9000):
         main_config = EasyDict(train_config)
+        self.eval=eval
+        if eval:
+            train_config["env"]["wrapper"]["collect"]["suite"] = 'FullTown02-v1'
         cfg = compile_config(main_config)
-        super(HACOEnv, self).__init__(SimpleCarlaEnv(cfg.env, "localhost", 9000, None), cfg.env.wrapper.collect)
+        super(HACOEnv, self).__init__(SimpleCarlaEnv(cfg.env, "localhost", port, None), cfg.env.wrapper.collect)
         self.controller = SteeringWheelController()
         self.last_takeover = False
         self.total_takeover_cost = 0
+        self.episode_reward = 0
 
     def step(self, action):
         human_action = self.controller.process_input(self.env._simulator_databuffer['state']['speed'] * 3.6)
         takeover = self.controller.left_shift_paddle or self.controller.right_shift_paddle
         o, r, d, info = super(HACOEnv, self).step(human_action if takeover else action)
-
+        self.episode_reward += r
         if not self.last_takeover and takeover:
             cost = self.get_takeover_cost(human_action, action)
             self.total_takeover_cost += cost
@@ -166,7 +170,9 @@ class HACOEnv(ContinuousBenchmarkEnvWrapper):
         info["out_of_road"] = info["off_road"]
         info["crash"] = info["collided"]
         info["arrive_dest"] = info["success"]
-        if not d:
+        info["episode_length"]= info["tick"]
+        info["episode_reward"]= self.episode_reward
+        if not self.eval:
             self.render()
         return o, r[0], d, info
 
@@ -190,6 +196,7 @@ class HACOEnv(ContinuousBenchmarkEnvWrapper):
     def reset(self, *args, **kwargs):
         self.last_takeover = False
         self.total_takeover_cost = 0
+        self.episode_reward = 0
         return super(HACOEnv, self).reset()
 
     @property
