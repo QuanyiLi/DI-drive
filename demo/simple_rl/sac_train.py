@@ -94,15 +94,15 @@ train_config = dict(
             n_sample=3000,
             noise_sigma=0.1,
             collector=dict(
-                collect_print_freq=1000,
+                collect_print_freq=500,
                 deepcopy_obs=True,
                 transform_obs=True,
             ),
         ),
         eval=dict(
             evaluator=dict(
-                eval_freq=3000,
-                n_episode=3,
+                eval_freq=500,
+                n_episode=20,
                 stop_rate=0.7,
                 transform_obs=True,
             ),
