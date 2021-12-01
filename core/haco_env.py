@@ -139,14 +139,18 @@ class HACOEnv(ContinuousBenchmarkEnvWrapper):
             train_config["env"]["wrapper"]["collect"]["suite"] = 'FullTown02-v1'
         cfg = compile_config(main_config)
         super(HACOEnv, self).__init__(SimpleCarlaEnv(cfg.env, "localhost", port, None), cfg.env.wrapper.collect)
-        self.controller = SteeringWheelController()
+        self.controller = SteeringWheelController() if not eval else None
         self.last_takeover = False
         self.total_takeover_cost = 0
         self.episode_reward = 0
 
     def step(self, action):
-        human_action = self.controller.process_input(self.env._simulator_databuffer['state']['speed'] * 3.6)
-        takeover = self.controller.left_shift_paddle or self.controller.right_shift_paddle
+        if not self.eval:
+            human_action = self.controller.process_input(self.env._simulator_databuffer['state']['speed'] * 3.6)
+            takeover = self.controller.left_shift_paddle or self.controller.right_shift_paddle
+        else:
+            human_action = [0,0]
+            takeover=False
         o, r, d, info = super(HACOEnv, self).step(human_action if takeover else action)
         self.episode_reward += r
         if not self.last_takeover and takeover:
