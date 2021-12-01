@@ -23,7 +23,7 @@ train_config = dict(
     exp_name='sac2_bev32_buf2e5_lr1e4_bs128_ns3000_update4_train_ft',
     env=dict(
         collector_env_num=1,
-        evaluator_env_num=0,
+        evaluator_env_num=1,
         simulator=dict(
             town='Town01',
             disable_two_wheels=True,
@@ -44,7 +44,10 @@ train_config = dict(
             )
         ),
         col_is_failure=True,
-        stuck_is_failure=True,
+        stuck_is_failure=False,
+        wrong_direction_is_failure=False,
+        off_route_is_failure=True,
+        off_road_is_failure=True,
         ignore_light=True,
         replay_path='./sac_video',
         visualize=dict(
@@ -66,7 +69,7 @@ train_config = dict(
         ),
     ),
     server=[
-        dict(carla_host='localhost', carla_ports=[9000, 9004, 2]),
+        dict(carla_host='localhost', carla_ports=[9012, 9016, 2]),
     ],
     policy=dict(
         cuda=True,
@@ -75,7 +78,7 @@ train_config = dict(
             twin_critic=True
         ),
         learn=dict(
-            batch_size=128,
+            batch_size=256,
             learning_rate_q=1e-4,
             learning_rate_policy=1e-4,
             learning_rate_value=1e-4,

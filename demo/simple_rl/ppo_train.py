@@ -22,7 +22,7 @@ from core.utils.others.ding_utils import compile_config
 train_config = dict(
     exp_name='ppo21_bev32_lr1e4_bs128_ns3000_update5_train_ft',
     env=dict(
-        collector_env_num=7,
+        collector_env_num=5,
         evaluator_env_num=1,
         simulator=dict(
             town='Town01',
@@ -64,12 +64,12 @@ train_config = dict(
         ),
         wrapper=dict(
             # Collect and eval suites for training
-            collect=dict(suite='FullTown02-v1'),
+            collect=dict(suite='train_ft', ),
             eval=dict(suite='FullTown02-v1', ),
         ),
     ),
     server=[
-        dict(carla_host='localhost', carla_ports=[9000, 9016, 2]),
+        dict(carla_host='localhost', carla_ports=[9000, 9012, 2]),
     ],
     policy=dict(
         cuda=True,
@@ -79,7 +79,7 @@ train_config = dict(
             action_shape=2,
         ),
         learn=dict(
-            epoch_per_collect=5,
+            epoch_per_collect=20,
             batch_size=128,
             learning_rate=0.0001,
             weight_decay=0.0001,
@@ -105,7 +105,7 @@ train_config = dict(
         ),
         eval=dict(
             evaluator=dict(
-                eval_freq=5000,
+                eval_freq=3000,
                 n_episode=20,
                 stop_rate=1.0,
                 transform_obs=True,
@@ -166,7 +166,7 @@ def main(cfg, seed=0):
             if stop:
                 break
         # Sampling data from environments
-        new_data = collector.collect(n_sample=3000, train_iter=learner.train_iter)
+        new_data = collector.collect(n_sample=int(4096*2), train_iter=learner.train_iter)
         unpack_birdview(new_data)
         learner.train(new_data, collector.envstep)
     learner.call_hook('after_run')
