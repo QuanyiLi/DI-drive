@@ -134,7 +134,7 @@ class SteeringWheelController:
 class HACOEnv(ContinuousBenchmarkEnvWrapper):
     def __init__(self, config=None, eval=False, port=9000):
         main_config = EasyDict(train_config)
-        self.eval=eval
+        self.eval = eval
         if eval:
             train_config["env"]["wrapper"]["collect"]["suite"] = 'FullTown02-v1'
         cfg = compile_config(main_config)
@@ -152,8 +152,8 @@ class HACOEnv(ContinuousBenchmarkEnvWrapper):
             human_action = self.controller.process_input(self.env._simulator_databuffer['state']['speed'] * 3.6)
             takeover = self.controller.left_shift_paddle or self.controller.right_shift_paddle
         else:
-            human_action = [0,0]
-            takeover=False
+            human_action = [0, 0]
+            takeover = False
         o, r, d, info = super(HACOEnv, self).step(human_action if takeover else action)
         self.episode_reward += r
         if not self.last_takeover and takeover:
@@ -177,14 +177,17 @@ class HACOEnv(ContinuousBenchmarkEnvWrapper):
         info["out_of_road"] = info["off_road"]
         info["crash"] = info["collided"]
         info["arrive_dest"] = info["success"]
-        info["episode_length"]= info["tick"]
-        info["episode_reward"]= self.episode_reward
+        info["episode_length"] = info["tick"]
+        info["episode_reward"] = self.episode_reward
         if not self.eval:
             self.render()
         return o, r[0], d, info
 
     def native_cost(self, info):
-        return 1 if info["off_route"] or info["off_road"] or info["collided"] else 0
+        if info["off_route"] or info["off_road"] or info["collided"] or info["wrong_direction"]:
+            return 1
+        else:
+            return 0
 
     def get_takeover_cost(self, human_action, agent_action):
         takeover_action = safe_clip(np.array(human_action), -1, 1)
