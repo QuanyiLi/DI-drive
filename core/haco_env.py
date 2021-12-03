@@ -43,6 +43,13 @@ train_config = dict(
                     pixels_per_meter=2,
                     pixels_ahead_vehicle=16,
                 ),
+                # dict(
+                #     name='birdview',
+                #     type='bev',
+                #     size=[32, 32],
+                #     pixels_per_meter=1,
+                #     pixels_ahead_vehicle=14,
+                # ),
             )
         ),
         col_is_failure=True,
